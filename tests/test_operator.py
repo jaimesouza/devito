@@ -182,6 +182,20 @@ class TestCodeGen(object):
         op4 = switchconfig(language='openmp')(Operator)(Eq(u, u + 1), language='C')
         assert '#pragma omp for' not in str(op4)
 
+    def test_nested_indexing(self):
+        x = Dimension(name='x')
+        y1 = Dimension(name='y1')
+        y2 = Dimension(name='y2')
+        u1 = Function(name="u1", shape=(4, 4), dimensions=(x, y1), dtype=np.int32)
+        u2 = Function(name="u2", shape=(4, 4), dimensions=(x, y2), dtype=np.int32)
+
+        Eq1 = Eq(u2, u2[x, u1])  # Not indexed
+        Eq2 = Eq(u2, u2[x, u1[x, y1]])  # Explicit indexing
+
+        op1 = Operator([Eq1])
+        op2 = Operator([Eq2])
+
+        assert str(op1.ccode) == str(op2.ccode)
 
 class TestArithmetic(object):
 

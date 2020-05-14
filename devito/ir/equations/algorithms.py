@@ -99,6 +99,8 @@ def lower_exprs(expressions, **kwargs):
             # Introduce shifting to align with the computational domain
             indices = [(a + o) for a, o in zip(i.indices, f._size_nodomain.left)]
 
+            indices = indexify_nested(indices)
+
             # Apply substitutions, if necessary
             if dimension_map:
                 indices = [j.xreplace(dimension_map) for j in indices]
@@ -113,4 +115,19 @@ def lower_exprs(expressions, **kwargs):
         else:
             processed.append(uxreplace(expr, mapper))
 
+    return processed
+
+
+def indexify_nested(indices, **kwargs):
+    """
+    Indexify a nested
+    """
+    # import pdb; pdb.set_trace()
+
+    processed = []
+    for index in indices:
+        if index.is_Function and not index.is_Dimension and not index.is_Indexed:
+            index = index.indexify(lshift=True)
+
+        processed.append(index)
     return processed
